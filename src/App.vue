@@ -1,7 +1,7 @@
 <template>
   <div>
     <h1>Jogo tabela verdade</h1>
-    <h1 v-if="condition !== playing">{{ condition === "lose" ? "você perdeu" : "você venceu" }}</h1>
+    <h1 v-if="condition !== 'playing'">{{ condition === "lose" ? "você perdeu" : "você venceu" }}</h1>
     <table class="game__table">
       <tr>
         <th v-for="i in headerArray" class="game__table-cell">
