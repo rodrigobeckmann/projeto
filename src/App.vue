@@ -14,7 +14,8 @@
         </td>
       </tr>
     </table>
-    <button @click="verifyWinCondition" style="margin: 20px;">Verificar resposta</button>
+    <button v-if="condition === 'playing'" @click="verifyWinCondition" style="margin: 20px;">Verificar resposta</button>
+    <button @click="restartGame" v-else>Reiniciar o jogo</button>
   </div>
 </template>
 
@@ -39,6 +40,11 @@ function mountFields() {
   fieldsArray.value.push(secondArray)
   fieldsArray.value.push(thirdArray)
   fieldsArray.value.push(fourthArray)
+}
+
+function restartGame() {
+  mountFields()
+  condition.value = "playing"
 }
 
 function mountWinCondition() {
