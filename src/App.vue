@@ -15,7 +15,7 @@
       </tr>
     </table>
     <button v-if="condition === 'playing'" @click="verifyWinCondition" style="margin: 20px;">Verificar resposta</button>
-    <button @click="restartGame" v-else>Reiniciar o jogo</button>
+    <button @click="restartGame" v-else style="margin: 20px;">Reiniciar o jogo</button>
   </div>
 </template>
 
@@ -43,6 +43,7 @@ function mountFields() {
 }
 
 function restartGame() {
+  fieldsArray.value = []
   mountFields()
   condition.value = "playing"
 }
