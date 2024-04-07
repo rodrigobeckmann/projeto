@@ -1,11 +1,11 @@
 <template>
   <div class="game-wrapper" style="display: flex; justify-content: center; flex-direction: column;">
-    <div style="display: flex;">
-      <button v-if="condition === 'playing'" @click="verifyWinCondition" style="margin: 20px;">Verificar
+    <div class="button-row">
+      <button @click="decreaseLevel">Diminuir dificuldade</button>
+      <button v-if="condition === 'playing'" @click="verifyWinCondition">Verificar
         resposta</button>
-      <button @click="restartGame" v-else style="margin: 20px;">Reiniciar o jogo</button>
-      <button @click="decreaseLevel" style="margin: 20px;">Diminuir dificuldade</button>
-      <button @click="increaseLevel" style="margin: 20px;">Aumentar dificuldade</button>
+      <button @click="restartGame" v-else>Reiniciar o jogo</button>
+      <button @click="increaseLevel">Aumentar dificuldade</button>
     </div>
     <h1 v-if="condition !== 'playing'">{{ condition === "lose" ? "você perdeu" : "você venceu" }}</h1>
     <table class="game__table">
@@ -16,8 +16,12 @@
         </th>
       </tr>
       <tr v-for="array, index1 in fieldsArray">
-        <td v-for="j, index2 in array" @click="selectValue(index1, index2)" class="game__table-cell">
-          {{ j }}
+        <td v-for="j, index2 in array" @click="selectValue(index1, index2)" class="game__table-cell" :class="{
+          'text-green': j === true,
+          'text-red': j === false,
+          'wrong': condition !== 'playing' && resultArray[index1][index2] === false && index2 > levels[actualLevel].variablesNum - 1,
+        }">
+          {{ j === null ? " " : j ? "VERDADEIRO" : "FALSO" }}
         </td>
       </tr>
     </table>
@@ -175,22 +179,35 @@ function selectValue(arrayX, arrayY) {
 }
 
 function verifyWinCondition() {
-  resultArray.value = [];
+  let allFilled = true;
+  for (let i = 0; i < fieldsArray.value.length; i++) {
+    if (fieldsArray.value[i][fieldsArray.value[i].length - 1] === null) {
+      allFilled = false;
+      break;
+    }
+  }
+  
+  if (!allFilled) {
+    alert("Preencha todas as respostas antes de verificar a condição de vitória");
+    return;
+  }
+
+  resultArray.value = fieldsArray.value.map(row => row.slice());
 
   let gameWon = true;
 
-  for (let i = 0; i < winCondition.value.length; i++) {
-    let rowCorrect = true;
-
-    for (let j = 0; j < winCondition.value[i].length; j++) {
-      if (fieldsArray.value[i][j] !== winCondition.value[i][j]) {
-        rowCorrect = false;
+  for (let i = 0; i < fieldsArray.value.length; i++) {
+    for (let j = 0; j < headerArray.value.length; j++) {
+      const isCorrect = fieldsArray.value[i][j] === winCondition.value[i][j];
+      if (!isCorrect) {
+        resultArray.value[i][j] = false;
         gameWon = false;
-        break;
+      } else {
+        resultArray.value[i][j] = true;
       }
     }
-    resultArray.value.push(rowCorrect);
   }
+
   condition.value = gameWon ? "win" : "lose";
 }
 
@@ -233,9 +250,13 @@ onBeforeMount(() => {
 .game__table {
   font-size: 20px;
   border-collapse: separate;
-  border: 5px solid black;
+  border: 3px solid black;
   width: auto;
   border-radius: 10px;
+  font-family: "Roboto", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)
 }
 
 .game__table-cell {
@@ -249,6 +270,7 @@ onBeforeMount(() => {
 
 .wrong {
   background-color: red;
+  color: black !important;
 }
 
 .border-top-left {
@@ -265,5 +287,41 @@ onBeforeMount(() => {
 
 .border-bottom-right {
   border-bottom-right-radius: 10px;
+}
+
+.button-row {
+  display: flex;
+  justify-content: center;
+  width: 100% !important;
+  height: 60px;
+  margin-bottom: 30px;
+  width: auto;
+  border: none;
+  gap: 20px;
+}
+
+.button-row button {
+  font-size: 20px;
+  padding: 10px;
+  background-color: #595c5a;
+  width: 100%;
+  padding: 0;
+  height: auto;
+  border: none;
+  cursor: pointer;
+  border-radius: 10px;
+  box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)
+}
+
+.button-row button:hover {
+  opacity: 0.5;
+}
+
+.text-green {
+  color: green;
+}
+
+.text-red {
+  color: red;
 }
 </style>
