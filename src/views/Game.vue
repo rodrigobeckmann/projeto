@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div style="display: flex; justify-content: center; flex-direction: column;">
     <h1>Jogo tabela verdade</h1>
     <h1 v-if="condition !== 'playing'">{{ condition === "lose" ? "você perdeu" : "você venceu" }}</h1>
     <table class="game__table">
@@ -17,8 +17,12 @@
     </table>
     <button v-if="condition === 'playing'" @click="verifyWinCondition" style="margin: 20px;">Verificar resposta</button>
     <button @click="restartGame" v-else style="margin: 20px;">Reiniciar o jogo</button>
-    <button @click="increaseMaxDepth" style="margin: 20px;">Aumentar dificuldade</button>
-    <button @click="decreaseMaxDepth" style="margin: 20px;">Diminuir dificuldade</button>
+    <button @click="easy" style="margin: 20px;">Easy</button>
+    <button @click="normal" style="margin: 20px;">Normal</button>
+    <button @click="hard" style="margin: 20px;">Hard</button>
+    <button @click="veryHard" style="margin: 20px;">Very Hard</button>
+    <button @click="almostImpossible" style="margin: 20px;">Almost Impossible</button>
+    <button @click="godLevel" style="margin: 20px;">God Level</button>
   </div>
 </template>
 
@@ -32,8 +36,9 @@ const condition = ref("playing")
 const usedVariables = ref([])
 const resultArray = ref([])
 const max = ref(1)
+const variablesNum = ref(2)
 
-const possibleVariables = ["x", "y"]
+const possibleVariables = ["x", "y", "z", "w"]
 const possibleConnectives = ["e", "ou"]
 
 function stringifyProposition(proposition) {
@@ -78,37 +83,30 @@ function generateRandomProposition(maxDepth = 1, currentDepth = 0) {
   }
 }
 
-
-function mountHeader(variablesNum = 2) {
-  const columns = variablesNum + 1
-  headerArray.value = []
-  usedVariables.value = []
-  for (let i = 1; i <= columns; i += 1) {
-    if (i <= variablesNum) {
-      const variable = getRandomVariable()
-      usedVariables.value.push(variable)
-      const obj = {
-        type: "variable",
-        value: variable,
-      }
-      headerArray.value.push(obj)
-    } else {
-      const proposition = generateRandomProposition(max.value);
-      const obj = { type: "proposition", value: proposition };
-      headerArray.value.push(obj)
-    }
+function mountHeader() {
+  for (let i = 0; i < variablesNum.value; i += 1) {
+    const variable = getRandomVariable();
+    usedVariables.value.push(variable);
+    headerArray.value.push({ type: "variable", value: variable });
   }
+  const proposition = generateRandomProposition(max.value);
+  headerArray.value.push({ type: "proposition", value: proposition });
+  usedVariables.value = [];
 }
 
-function mountFields(variablesNum,) {
-  const firstArray = [true, false, null]
-  const secondArray = [false, true, null]
-  const thirdArray = [true, true, null]
-  const fourthArray = [false, false, null]
-  fieldsArray.value.push(firstArray)
-  fieldsArray.value.push(secondArray)
-  fieldsArray.value.push(thirdArray)
-  fieldsArray.value.push(fourthArray)
+function mountFields() {
+  const rows = Math.pow(2, variablesNum.value);
+  const columns = variablesNum.value;
+  fieldsArray.value = [];
+  for (let i = 0; i < rows; i++) {
+    const row = [];
+    for (let j = 0; j < columns; j++) {
+      const isTrue = (i & (1 << j)) !== 0;
+      row.unshift(isTrue);
+    }
+    row.push(null);
+    fieldsArray.value.push(row);
+  }
 }
 
 function restartGame() {
@@ -187,16 +185,41 @@ function verifyWinCondition() {
   condition.value = gameWon ? "win" : "lose";
 }
 
-function increaseMaxDepth() {
-  max.value += 1
+function easy() {
+  max.value = 1
+  variablesNum.value = 2
   restartGame()
 }
 
-function decreaseMaxDepth() {
-  max.value -= 1
+function normal() {
+  max.value = 2
+  variablesNum.value = 2
   restartGame()
 }
 
+function hard() {
+  max.value = 2
+  variablesNum.value = 3
+  restartGame()
+}
+
+function veryHard() {
+  max.value = 2
+  variablesNum.value = 4
+  restartGame()
+}
+
+function almostImpossible() {
+  max.value = 3
+  variablesNum.value = 4
+  restartGame()
+}
+
+function godLevel() {
+  max.value = 4
+  variablesNum.value = 4
+  restartGame()
+}
 
 onBeforeMount(() => {
   mountHeader()
