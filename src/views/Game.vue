@@ -1,6 +1,12 @@
 <template>
-  <div style="display: flex; justify-content: center; flex-direction: column;">
-    <h1>Jogo tabela verdade</h1>
+  <div class="game-wrapper" style="display: flex; justify-content: center; flex-direction: column;">
+    <div style="display: flex;">
+      <button v-if="condition === 'playing'" @click="verifyWinCondition" style="margin: 20px;">Verificar
+        resposta</button>
+      <button @click="restartGame" v-else style="margin: 20px;">Reiniciar o jogo</button>
+      <button @click="decreaseLevel" style="margin: 20px;">Diminuir dificuldade</button>
+      <button @click="increaseLevel" style="margin: 20px;">Aumentar dificuldade</button>
+    </div>
     <h1 v-if="condition !== 'playing'">{{ condition === "lose" ? "você perdeu" : "você venceu" }}</h1>
     <table class="game__table">
       <tr>
@@ -15,19 +21,12 @@
         </td>
       </tr>
     </table>
-    <button v-if="condition === 'playing'" @click="verifyWinCondition" style="margin: 20px;">Verificar resposta</button>
-    <button @click="restartGame" v-else style="margin: 20px;">Reiniciar o jogo</button>
-    <button @click="easy" style="margin: 20px;">Easy</button>
-    <button @click="normal" style="margin: 20px;">Normal</button>
-    <button @click="hard" style="margin: 20px;">Hard</button>
-    <button @click="veryHard" style="margin: 20px;">Very Hard</button>
-    <button @click="almostImpossible" style="margin: 20px;">Almost Impossible</button>
-    <button @click="godLevel" style="margin: 20px;">God Level</button>
+
   </div>
 </template>
 
 <script setup>
-import {ref, onBeforeMount} from 'vue'
+import { ref, onBeforeMount } from 'vue'
 
 const headerArray = ref([])
 const fieldsArray = ref([])
@@ -37,9 +36,19 @@ const usedVariables = ref([])
 const resultArray = ref([])
 const max = ref(1)
 const variablesNum = ref(2)
+const actualLevel = ref(0)
 
 const possibleVariables = ["x", "y", "z", "w"]
 const possibleConnectives = ["e", "ou"]
+
+const levels = [
+  { name: "easy", max: 1, variablesNum: 2 },
+  { name: "normal", max: 2, variablesNum: 2 },
+  { name: "hard", max: 2, variablesNum: 3 },
+  { name: "veryHard", max: 2, variablesNum: 4 },
+  { name: "almostImpossible", max: 3, variablesNum: 4 },
+  { name: "godLevel", max: 4, variablesNum: 4 },
+]
 
 function stringifyProposition(proposition) {
   if (proposition.type === "variable") {
@@ -53,13 +62,13 @@ function stringifyProposition(proposition) {
 }
 
 function getRandomVariable() {
-    const availableVariables = possibleVariables.filter(variable => !usedVariables.value.includes(variable));
-    if (availableVariables.length === 0) {
-        throw new Error("Não há mais variáveis disponíveis.");
-    }
-    const randomIndex = Math.floor(Math.random() * availableVariables.length);
-    const selectedVariable = availableVariables[randomIndex];
-    return selectedVariable;
+  const availableVariables = possibleVariables.filter(variable => !usedVariables.value.includes(variable));
+  if (availableVariables.length === 0) {
+    throw new Error("Não há mais variáveis disponíveis.");
+  }
+  const randomIndex = Math.floor(Math.random() * availableVariables.length);
+  const selectedVariable = availableVariables[randomIndex];
+  return selectedVariable;
 }
 
 function generateRandomProposition(maxDepth = 1, currentDepth = 0) {
@@ -84,18 +93,18 @@ function generateRandomProposition(maxDepth = 1, currentDepth = 0) {
 }
 
 function mountHeader() {
-  for (let i = 0; i < variablesNum.value; i += 1) {
+  for (let i = 0; i < levels[actualLevel.value].variablesNum; i += 1) {
     const variable = getRandomVariable();
     usedVariables.value.push(variable);
     headerArray.value.push({ type: "variable", value: variable });
   }
-  const proposition = generateRandomProposition(max.value);
+  const proposition = generateRandomProposition(levels[actualLevel.value].max);
   headerArray.value.push({ type: "proposition", value: proposition });
 }
 
 function mountFields() {
-  const rows = Math.pow(2, variablesNum.value);
-  const columns = variablesNum.value;
+  const rows = Math.pow(2, levels[actualLevel.value].variablesNum);
+  const columns = levels[actualLevel.value].variablesNum;
   fieldsArray.value = [];
   for (let i = 0; i < rows; i++) {
     const row = [];
@@ -168,7 +177,7 @@ function selectValue(arrayX, arrayY) {
 function verifyWinCondition() {
   resultArray.value = [];
 
-  let gameWon = true; 
+  let gameWon = true;
 
   for (let i = 0; i < winCondition.value.length; i++) {
     let rowCorrect = true;
@@ -185,39 +194,19 @@ function verifyWinCondition() {
   condition.value = gameWon ? "win" : "lose";
 }
 
-function easy() {
-  max.value = 1
-  variablesNum.value = 2
+function decreaseLevel() {
+  if (actualLevel.value === 0) {
+    return
+  }
+  actualLevel.value -= 1
   restartGame()
 }
 
-function normal() {
-  max.value = 2
-  variablesNum.value = 2
-  restartGame()
-}
-
-function hard() {
-  max.value = 2
-  variablesNum.value = 3
-  restartGame()
-}
-
-function veryHard() {
-  max.value = 2
-  variablesNum.value = 4
-  restartGame()
-}
-
-function almostImpossible() {
-  max.value = 3
-  variablesNum.value = 4
-  restartGame()
-}
-
-function godLevel() {
-  max.value = 4
-  variablesNum.value = 4
+function increaseLevel() {
+  if (actualLevel.value === levels.length - 1) {
+    return
+  }
+  actualLevel.value += 1
   restartGame()
 }
 
@@ -230,11 +219,23 @@ onBeforeMount(() => {
 </script>
 
 <style scoped>
+.game-wrapper {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #a0a8a8;
+  padding: 20px;
+  border-radius: 10px;
+  width: -moz-fit-content;
+  width: fit-content;
+}
+
 .game__table {
   font-size: 20px;
-  border-collapse: collapse;
-  border: 1px solid black;
+  border-collapse: separate;
+  border: 5px solid black;
   width: auto;
+  border-radius: 10px;
 }
 
 .game__table-cell {
@@ -243,9 +244,26 @@ onBeforeMount(() => {
   height: 50px;
   text-align: center;
   min-width: 200px;
+  vertical-align: middle;
 }
 
 .wrong {
   background-color: red;
+}
+
+.border-top-left {
+  border-top-left-radius: 10px;
+}
+
+.border-top-right {
+  border-top-right-radius: 10px;
+}
+
+.border-bottom-left {
+  border-bottom-left-radius: 10px;
+}
+
+.border-bottom-right {
+  border-bottom-right-radius: 10px;
 }
 </style>
