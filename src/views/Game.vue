@@ -20,6 +20,7 @@
           'text-green': j === true,
           'text-red': j === false,
           'wrong': condition !== 'playing' && resultArray[index1][index2] === false && index2 > levels[actualLevel].variablesNum - 1,
+          'prop-cell': condition === 'playing' && index2 > levels[actualLevel].variablesNum - 1,
         }">
           {{ j === null ? " " : j ? "VERDADEIRO" : "FALSO" }}
         </td>
@@ -323,5 +324,13 @@ onBeforeMount(() => {
 
 .text-red {
   color: red;
+}
+
+.prop-cell {
+  cursor: pointer;
+}
+
+.prop-cell:hover {
+  background-color: #c8ccca;
 }
 </style>
