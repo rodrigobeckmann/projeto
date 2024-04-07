@@ -15,14 +15,14 @@
           <p v-else>{{ stringifyProposition(head.value) }}</p>
         </th>
       </tr>
-      <tr v-for="array, index1 in fieldsArray">
-        <td v-for="j, index2 in array" @click="selectValue(index1, index2)" class="game__table-cell" :class="{
-          'text-green': j === true,
-          'text-red': j === false,
+      <tr v-for="row, index1 in fieldsArray">
+        <td v-for="value, index2 in row" @click="selectValue(index1, index2)" class="game__table-cell" :class="{
+          'text-green': value === true,
+          'text-red': value === false,
           'wrong': condition !== 'playing' && resultArray[index1][index2] === false && index2 > levels[actualLevel].variablesNum - 1,
           'prop-cell': condition === 'playing' && index2 > levels[actualLevel].variablesNum - 1,
         }">
-          {{ j === null ? " " : j ? "VERDADEIRO" : "FALSO" }}
+          {{ value === null ? " " : value ? "VERDADEIRO" : "FALSO" }}
         </td>
       </tr>
     </table>
@@ -39,8 +39,6 @@ const winCondition = ref([])
 const condition = ref("playing")
 const usedVariables = ref([])
 const resultArray = ref([])
-const max = ref(1)
-const variablesNum = ref(2)
 const actualLevel = ref(0)
 
 const possibleVariables = ["x", "y", "z", "w"]
@@ -122,17 +120,6 @@ function mountFields() {
   }
 }
 
-function restartGame() {
-  headerArray.value = []
-  fieldsArray.value = []
-  winCondition.value = []
-  usedVariables.value = [];
-  mountHeader()
-  mountFields()
-  mountWinCondition()
-  condition.value = "playing"
-}
-
 function mountWinCondition() {
   winCondition.value = [];
   for (let i = 0; i < fieldsArray.value.length; i++) {
@@ -187,16 +174,12 @@ function verifyWinCondition() {
       break;
     }
   }
-  
   if (!allFilled) {
     alert("Preencha todas as respostas antes de verificar a condição de vitória");
     return;
   }
-
   resultArray.value = fieldsArray.value.map(row => row.slice());
-
   let gameWon = true;
-
   for (let i = 0; i < fieldsArray.value.length; i++) {
     for (let j = 0; j < headerArray.value.length; j++) {
       const isCorrect = fieldsArray.value[i][j] === winCondition.value[i][j];
@@ -208,7 +191,6 @@ function verifyWinCondition() {
       }
     }
   }
-
   condition.value = gameWon ? "win" : "lose";
 }
 
@@ -228,10 +210,23 @@ function increaseLevel() {
   restartGame()
 }
 
-onBeforeMount(() => {
+function startGame() {
   mountHeader()
   mountFields()
   mountWinCondition()
+}
+
+function restartGame() {
+  headerArray.value = []
+  fieldsArray.value = []
+  winCondition.value = []
+  usedVariables.value = [];
+  condition.value = "playing"
+  startGame()
+}
+
+onBeforeMount(() => {
+  startGame()
 })
 
 </script>
