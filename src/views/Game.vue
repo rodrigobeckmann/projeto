@@ -64,7 +64,7 @@ function getRandomVariable() {
 
 function generateRandomProposition(maxDepth = 1, currentDepth = 0) {
   if (currentDepth === maxDepth) {
-    const randomVariable = possibleVariables[Math.floor(Math.random() * possibleVariables.length)];
+    const randomVariable = usedVariables.value[Math.floor(Math.random() * usedVariables.value.length)];
     return { type: "variable", value: randomVariable };
   } else {
     const connective = possibleConnectives[Math.floor(Math.random() * possibleConnectives.length)];
@@ -91,7 +91,6 @@ function mountHeader() {
   }
   const proposition = generateRandomProposition(max.value);
   headerArray.value.push({ type: "proposition", value: proposition });
-  usedVariables.value = [];
 }
 
 function mountFields() {
@@ -113,6 +112,7 @@ function restartGame() {
   headerArray.value = []
   fieldsArray.value = []
   winCondition.value = []
+  usedVariables.value = [];
   mountHeader()
   mountFields()
   mountWinCondition()
